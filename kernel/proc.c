@@ -302,6 +302,8 @@ fork(void)
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
 
+  np->trace = p->trace;
+
   // increment reference counts on open file descriptors.
   for(i = 0; i < NOFILE; i++)
     if(p->ofile[i])
@@ -680,4 +682,18 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+uint64 get_nproc() {
+  uint64 nproc = 0;
+  struct proc *p;
+
+  for(p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+    if(p->state != UNUSED) {
+      nproc++;
+    }
+    release(&p->lock);
+  }
+  return nproc;
 }

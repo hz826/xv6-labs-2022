@@ -1,0 +1,7 @@
+usertrap
+a7 = 0x7
+a7 = SYS_exec
+user mode -> privileged mode
+lw 0(zero) but address 0 is unused
+$scause: 8 -> 13
+p->name: "initcode\000\000\000\000\000\000\000"  p->pid: 1
