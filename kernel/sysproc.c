@@ -71,10 +71,44 @@ sys_sleep(void)
 
 
 #ifdef LAB_PGTBL
+void vmprint(pagetable_t pagetable);
 int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  struct proc *p;
+  uint64 addr;
+  int sz;
+  uint64 abits_addr;
+  int abits_temp;
+  pte_t *pte;
+
+  p = myproc();
+  argaddr(0, &addr);
+  argint(1, &sz);
+  argaddr(2, &abits_addr);
+
+  // printf(">>> pgaccess START\n");
+  // printf(">>> addr = %p, sz = %d, abits_addr = %p\n", addr, sz, abits_addr);
+  // addr = PGROUNDDOWN(addr);
+  // vmprint(p->pagetable);
+  // printf(">>>\n");
+
+  abits_temp = 0;
+  for (int i=0; i<sz; i++) {
+    pte = walk(p->pagetable, addr, 0);
+    // printf(">>>>>> pte = %p\n", *pte);
+    if (pte && (*pte & PTE_A)) {
+      abits_temp |= (1<<i);
+      *pte &= ~PTE_A;
+    }
+    addr += PGSIZE;
+  }
+
+  // vmprint(p->pagetable);
+  // printf(">>> abits = %x\n", abits_temp);
+  // printf(">>> pgaccess END\n\n");
+  copyout(p->pagetable, abits_addr, (char*) &abits_temp, sizeof abits_temp);
   return 0;
 }
 #endif

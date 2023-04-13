@@ -437,3 +437,27 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+void
+vmprint_walk(pagetable_t pagetable, int level)
+{
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    if(pte & PTE_V){
+      uint64 child = PTE2PA(pte);
+
+      for (int j = level; j <= 2; j++) printf(" ..");
+      printf("%d: pte %p pa %p\n", i, pte, child);
+
+      // char perm[4] = {((pte&PTE_A)?'A':'-'), ((pte&PTE_R)?'R':'-'), ((pte&PTE_W)?'W':'-'), ((pte&PTE_X)?'X':'-')};
+      // printf("%d: pte %p %s pa %p\n", i, pte, perm, child);
+
+      if (level > 0) vmprint_walk((pagetable_t)child, level-1);
+    }
+  }
+}
+
+void vmprint(pagetable_t pagetable) {
+  printf("page table %p\n", pagetable);
+  vmprint_walk(pagetable, 2);
+}
