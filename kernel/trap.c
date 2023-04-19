@@ -77,8 +77,20 @@ usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
-    yield();
+  if(which_dev == 2) {
+    // printf("timer interrupt pid = %d handler = %d resttime = %d\n", p->pid, p->sigalarm_handler, p->sigalarm_resttime);
+    if (p->sigalarm_period && !p->sigalarm_alarming) {
+      if (--p->sigalarm_resttime <= 0) {
+        p->sigalarm_alarming = 1;
+        p->sigalarm_trapframe_save = *p->trapframe;
+        p->sigalarm_resttime = p->sigalarm_period;
+        
+        // p->trapframe->ra = p->trapframe->epc;
+        p->trapframe->epc = p->sigalarm_handler;
+      }
+    } 
+    else yield();
+  }
 
   usertrapret();
 }
